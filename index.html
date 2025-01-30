@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reconocimiento de Cartas</title>
+</head>
+<body>
+    <h1>Escanea tus cartas</h1>
+    <video id="video" autoplay></video>
+    <button onclick="captureImage()">Capturar</button>
+    <canvas id="canvas" style="display: none;"></canvas>
+    <p>Resultado: <span id="result"></span></p>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.0.2/tesseract.min.js"></script>
+    <script>
+        const video = document.getElementById("video");
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+
+        // Acceder a la cámara
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(err => console.error(err));
+
+        function captureImage() {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Convertir la imagen a texto con Tesseract.js
+            Tesseract.recognize(canvas, 'eng').then(({ data: { text } }) => {
+                document.getElementById("result").innerText = text;
+                sumNumbers(text);
+            });
+        }
+
+        function sumNumbers(text) {
+            const numbers = text.match(/\d+/g) || [];
+            const sum = numbers.reduce((acc, num) => acc + parseInt(num, 10), 0);
+            document.getElementById("result").innerText += ` (Suma: ${sum})`;
+        }
+    </script>
+</body>
+</html>
